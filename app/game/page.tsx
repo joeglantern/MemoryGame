@@ -240,23 +240,18 @@ export default function MemoryGame() {
               }`}
               onClick={() => handleCardClick(index)}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-indigo-500/5 to-white/5" />
-              <AnimatePresence>
-                {(card.isMatched || flippedIndexes.includes(index)) && (
-                  <motion.div
-                    initial={{ opacity: 0, rotateY: 180 }}
-                    animate={{ opacity: 1, rotateY: 180 }}
-                    exit={{ opacity: 0, rotateY: 180 }}
-                    className="absolute inset-0 flex items-center justify-center backface-hidden"
+              {/* Front face (hidden) */}
+              <div className="absolute inset-0 flex items-center justify-center backface-hidden">
+                <div className="w-8 h-8 rounded-full bg-indigo-800/50"></div>
+              </div>
+              
+              {/* Back face (icon) */}
+              <div
+                style={{ transform: "rotateY(180deg)" }}
+                className={`absolute inset-0 flex items-center justify-center backface-hidden ${card.color}`}
               >
-                    <card.icon
-                      className={`w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 ${
-                        card.isMatched ? `${card.color} filter drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]` : card.color
-                }`}
-                    />
-            </motion.div>
-                )}
-              </AnimatePresence>
+                {React.createElement(card.icon, { className: "w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12" })}
+              </div>
             </Card>
           </motion.div>
         ))}
