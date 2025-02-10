@@ -105,11 +105,6 @@ const SOUND_PATHS = {
   bgm: '/sounds/background-music.mp3'
 }
 
-// BGM instance
-const bgmSound = new Audio(SOUND_PATHS.bgm)
-bgmSound.loop = true
-bgmSound.volume = 0.2
-
 export default function MemoryGame() {
   const [difficulty, setDifficulty] = useState<Difficulty>("easy")
   const [cards, setCards] = useState<MemoryCard[]>(createCards(difficulty))
@@ -121,6 +116,7 @@ export default function MemoryGame() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSoundOn, setIsSoundOn] = useState(true)
   const [isBgmPlaying, setIsBgmPlaying] = useState(false)
+  const [bgmSound, setBgmSound] = useState<HTMLAudioElement | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -141,9 +137,17 @@ export default function MemoryGame() {
     return () => clearInterval(interval)
   }, [isGameActive])
 
+  // Initialize audio on client side only
+  useEffect(() => {
+    const bgm = new Audio(SOUND_PATHS.bgm)
+    bgm.loop = true
+    bgm.volume = 0.2
+    setBgmSound(bgm)
+  }, [])
+
   // Enhanced sound control functions
   const playSound = async (soundType: 'flip' | 'match' | 'victory') => {
-    if (isSoundOn) {
+    if (isSoundOn && typeof window !== 'undefined') {
       try {
         const sound = new Audio(SOUND_PATHS[soundType])
         sound.volume = soundType === 'flip' ? 0.4 : 0.5
@@ -156,23 +160,25 @@ export default function MemoryGame() {
 
   const toggleSound = async () => {
     setIsSoundOn(!isSoundOn)
-    try {
-      if (!isSoundOn) {
-        await bgmSound.play()
-        setIsBgmPlaying(true)
-      } else {
-        bgmSound.pause()
-        setIsBgmPlaying(false)
+    if (bgmSound) {
+      try {
+        if (!isSoundOn) {
+          await bgmSound.play()
+          setIsBgmPlaying(true)
+        } else {
+          bgmSound.pause()
+          setIsBgmPlaying(false)
+        }
+      } catch (error) {
+        console.error('Error toggling sound:', error)
       }
-    } catch (error) {
-      console.error('Error toggling sound:', error)
     }
   }
 
   // Start background music when game starts
   useEffect(() => {
     const startBgm = async () => {
-      if (isGameActive && isSoundOn && !isBgmPlaying) {
+      if (isGameActive && isSoundOn && !isBgmPlaying && bgmSound) {
         try {
           await bgmSound.play()
           setIsBgmPlaying(true)
@@ -183,10 +189,12 @@ export default function MemoryGame() {
     }
     startBgm()
     return () => {
-      bgmSound.pause()
-      setIsBgmPlaying(false)
+      if (bgmSound) {
+        bgmSound.pause()
+        setIsBgmPlaying(false)
+      }
     }
-  }, [isGameActive, isSoundOn])
+  }, [isGameActive, isSoundOn, isBgmPlaying, bgmSound])
 
   const handleCardClick = (clickedIndex: number) => {
     if (!isGameActive) {

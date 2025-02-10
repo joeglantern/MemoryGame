@@ -8,6 +8,10 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: false,
   },
+  output: 'export',
+  images: {
+    unoptimized: true,
+  },
 }
 
 module.exports = nextConfig 
