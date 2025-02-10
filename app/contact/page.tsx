@@ -38,7 +38,7 @@ export default function ContactPage() {
           
           <div className="flex-1 text-center md:text-left">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-300 via-pink-300 to-indigo-300 text-transparent bg-clip-text mb-4">
-              Joseph Liban M.
+              Joseph Liban Muritu
             </h1>
             <p className="text-xl text-indigo-200 mb-6">
               Full Stack Developer
@@ -93,7 +93,7 @@ export default function ContactPage() {
               </div>
               <div className="flex items-center gap-3 text-indigo-300">
                 <Mail className="w-5 h-5" />
-                <p>Contact me for email</p>
+                <p>libanjoe7@gmail.com</p>
               </div>
             </div>
           </motion.div>
