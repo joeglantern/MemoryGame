@@ -6,7 +6,6 @@
   NEXT_PUBLIC_SITE_URL = "https://memory-match-game.netlify.app"
   NETLIFY = "true"
   NEXT_TELEMETRY_DISABLED = "1"
-  NETLIFY_NEXT_PLUGIN_SKIP = "true"
 
 [[redirects]]
   from = "/*"
