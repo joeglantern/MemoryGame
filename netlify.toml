@@ -6,8 +6,17 @@
   NEXT_PUBLIC_SITE_URL = "https://memory-match-game.netlify.app"
   NETLIFY = "true"
   NEXT_TELEMETRY_DISABLED = "1"
+  NODE_VERSION = "18.20.6"
 
 [[redirects]]
   from = "/*"
   to = "/index.html"
-  status = 200 
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin" 
