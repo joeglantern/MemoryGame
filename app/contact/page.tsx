@@ -13,10 +13,46 @@ export default function ContactPage() {
       <NavMenu />
       
       {/* Background animations */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-        <div className="absolute top-1/3 right-1/3 w-72 h-72 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-1/4 left-1/2 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <motion.div 
+          className="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20"
+          animate={{ 
+            scale: [1, 1.2, 1],
+            x: [0, 30, 0],
+            y: [0, -50, 0]
+          }}
+          transition={{ 
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div 
+          className="absolute top-1/3 right-1/3 w-72 h-72 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-20"
+          animate={{ 
+            scale: [1.2, 1, 1.2],
+            x: [0, -30, 0],
+            y: [0, 50, 0]
+          }}
+          transition={{ 
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div 
+          className="absolute bottom-1/4 left-1/2 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20"
+          animate={{ 
+            scale: [1, 1.3, 1],
+            x: [0, 40, 0],
+            y: [0, 30, 0]
+          }}
+          transition={{ 
+            duration: 9,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
       </div>
 
       <motion.div 
@@ -26,18 +62,32 @@ export default function ContactPage() {
         transition={{ duration: 0.5 }}
       >
         <div className="flex flex-col md:flex-row items-center gap-8">
-          <div className="relative w-48 h-48 rounded-full overflow-hidden border-4 border-indigo-400/50">
+          <motion.div 
+            className="relative w-48 h-48 rounded-full overflow-hidden border-4 border-indigo-400/50"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            initial={{ rotate: -5 }}
+            animate={{ rotate: 5 }}
+            transition={{
+              rotate: {
+                duration: 2,
+                repeat: Infinity,
+                repeatType: "reverse",
+                ease: "easeInOut"
+              }
+            }}
+          >
             <Image
               src="/images/joe.jpg"
-              alt="Joseph Liban"
+              alt="Joseph Liban Muritu"
               fill
-              className="object-cover"
+              className="object-cover hover:scale-110 transition-transform duration-300"
               priority
             />
-          </div>
+          </motion.div>
           
           <div className="flex-1 text-center md:text-left">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-300 via-pink-300 to-indigo-300 text-transparent bg-clip-text mb-4">
+            <h1 className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-purple-300 via-pink-300 to-indigo-300 text-transparent bg-clip-text mb-4 break-words">
               Joseph Liban Muritu
             </h1>
             <p className="text-xl text-indigo-200 mb-6">
