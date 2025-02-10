@@ -6,7 +6,9 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Heart, Star, Sun, Moon, Cloud, Flower2, Zap, Music, Smile, Coffee, Sparkles, type LucideIcon } from "lucide-react"
+import { Heart, Star, Sun, Moon, Cloud, Flower2, Zap, Music, Smile, Coffee, Sparkles, 
+  Flame, Snowflake, Lightbulb, Rainbow, Bird, Fish, Rocket, Diamond, Crown, 
+  type LucideIcon, Volume2, VolumeX } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -18,9 +20,10 @@ type MemoryCard = {
   icon: LucideIcon
   isMatched: boolean
   color: string
+  isSpecial?: boolean  // For special cards in higher difficulties
 }
 
-type Difficulty = "easy" | "medium" | "hard"
+type Difficulty = "easy" | "medium" | "hard" | "expert" | "master"
 
 const iconConfigs = [
   { icon: Heart, color: "text-rose-400" },
@@ -33,22 +36,79 @@ const iconConfigs = [
   { icon: Music, color: "text-pink-400" },
   { icon: Smile, color: "text-green-400" },
   { icon: Coffee, color: "text-brown-400" },
+  { icon: Sparkles, color: "text-yellow-400" },
+  { icon: Flame, color: "text-red-400" },
+  { icon: Snowflake, color: "text-blue-400" },
+  { icon: Lightbulb, color: "text-yellow-500" },
+  { icon: Rainbow, color: "text-purple-500" },
+  { icon: Bird, color: "text-sky-500" },
+  { icon: Fish, color: "text-cyan-400" },
+  { icon: Rocket, color: "text-indigo-400" },
+  { icon: Diamond, color: "text-violet-400" },
+  { icon: Crown, color: "text-amber-500" }
 ]
 
 const createCards = (difficulty: Difficulty) => {
-  const pairCount = difficulty === "easy" ? 6 : difficulty === "medium" ? 8 : 10
-  const selectedIcons = iconConfigs.slice(0, pairCount)
+  const pairCount = 
+    difficulty === "easy" ? 6 : 
+    difficulty === "medium" ? 8 : 
+    difficulty === "hard" ? 10 :
+    difficulty === "expert" ? 12 :
+    15 // master level
+
+  // Shuffle the icon configs first
+  const shuffledConfigs = [...iconConfigs].sort(() => Math.random() - 0.5)
+  const selectedIcons = shuffledConfigs.slice(0, pairCount)
 
   const cards: MemoryCard[] = []
 
   selectedIcons.forEach(({ icon, color }, index) => {
-    cards.push({ id: index * 2, icon, color, isMatched: false }, { id: index * 2 + 1, icon, color, isMatched: false })
+    if (difficulty === "expert" || difficulty === "master") {
+      // Add special effects for higher difficulties
+      const isSpecial = Math.random() > 0.7 // 30% chance for special cards
+      const alternateColor = `text-${['rose', 'amber', 'emerald', 'purple', 'sky'][Math.floor(Math.random() * 5)]}-400`
+      
+      cards.push(
+        { 
+          id: index * 2, 
+          icon, 
+          color, 
+          isMatched: false,
+          isSpecial 
+        },
+        { 
+          id: index * 2 + 1, 
+          icon, 
+          color: alternateColor, 
+          isMatched: false,
+          isSpecial 
+        }
+      )
+    } else {
+      cards.push(
+        { id: index * 2, icon, color, isMatched: false },
+        { id: index * 2 + 1, icon, color, isMatched: false }
+      )
+    }
   })
 
   return cards.sort(() => Math.random() - 0.5)
 }
 
 const matchMessages = ["Great match!", "You're on fire!", "Perfect pair!", "Awesome memory!", "Fantastic job!"]
+
+// Sound paths configuration
+const SOUND_PATHS = {
+  flip: '/sounds/card-flip.mp3',
+  match: '/sounds/match.mp3',
+  victory: '/sounds/victory.mp3',
+  bgm: '/sounds/background-music.mp3'
+}
+
+// BGM instance
+const bgmSound = new Audio(SOUND_PATHS.bgm)
+bgmSound.loop = true
+bgmSound.volume = 0.2
 
 export default function MemoryGame() {
   const [difficulty, setDifficulty] = useState<Difficulty>("easy")
@@ -59,6 +119,8 @@ export default function MemoryGame() {
   const [timer, setTimer] = useState(0)
   const [isGameActive, setIsGameActive] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [isSoundOn, setIsSoundOn] = useState(true)
+  const [isBgmPlaying, setIsBgmPlaying] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -79,8 +141,57 @@ export default function MemoryGame() {
     return () => clearInterval(interval)
   }, [isGameActive])
 
+  // Enhanced sound control functions
+  const playSound = async (soundType: 'flip' | 'match' | 'victory') => {
+    if (isSoundOn) {
+      try {
+        const sound = new Audio(SOUND_PATHS[soundType])
+        sound.volume = soundType === 'flip' ? 0.4 : 0.5
+        await sound.play()
+      } catch (error) {
+        console.error(`Error playing ${soundType} sound:`, error)
+      }
+    }
+  }
+
+  const toggleSound = async () => {
+    setIsSoundOn(!isSoundOn)
+    try {
+      if (!isSoundOn) {
+        await bgmSound.play()
+        setIsBgmPlaying(true)
+      } else {
+        bgmSound.pause()
+        setIsBgmPlaying(false)
+      }
+    } catch (error) {
+      console.error('Error toggling sound:', error)
+    }
+  }
+
+  // Start background music when game starts
+  useEffect(() => {
+    const startBgm = async () => {
+      if (isGameActive && isSoundOn && !isBgmPlaying) {
+        try {
+          await bgmSound.play()
+          setIsBgmPlaying(true)
+        } catch (error) {
+          console.error('Error playing background music:', error)
+        }
+      }
+    }
+    startBgm()
+    return () => {
+      bgmSound.pause()
+      setIsBgmPlaying(false)
+    }
+  }, [isGameActive, isSoundOn])
+
   const handleCardClick = (clickedIndex: number) => {
-    if (!isGameActive) setIsGameActive(true)
+    if (!isGameActive) {
+      setIsGameActive(true)
+    }
     if (
       isChecking ||
       cards[clickedIndex].isMatched ||
@@ -89,6 +200,7 @@ export default function MemoryGame() {
     )
       return
 
+    playSound('flip')
     const newFlipped = [...flippedIndexes, clickedIndex]
     setFlippedIndexes(newFlipped)
 
@@ -99,7 +211,10 @@ export default function MemoryGame() {
       const secondCard = cards[secondIndex]
 
       if (firstCard.icon === secondCard.icon) {
-        setTimeout(() => {
+        // Play match sound first, before any state updates
+        playSound('match')
+        
+        setTimeout(async () => {
           setCards(
             cards.map((card, index) =>
               index === firstIndex || index === secondIndex ? { ...card, isMatched: true } : card,
@@ -108,7 +223,7 @@ export default function MemoryGame() {
           setFlippedIndexes([])
           setMatches((m) => m + 1)
           setIsChecking(false)
-
+          
           // Celebration animation
           confetti({
             particleCount: 100,
@@ -124,6 +239,7 @@ export default function MemoryGame() {
 
           if (matches === cards.length / 2 - 1) {
             setIsGameActive(false)
+            playSound('victory')
             toast("🎉 Congratulations! You've found all the matches! 🎈", {
               description: `Time: ${formatTime(timer)}`,
               className: "bg-purple-900 text-purple-100 border-purple-700",
@@ -171,6 +287,20 @@ export default function MemoryGame() {
     <div className="flex flex-col items-center justify-center min-h-screen p-4 space-y-8 bg-gradient-to-br from-purple-950 via-indigo-950 to-slate-950 overflow-hidden">
       <NavMenu />
 
+      {/* Sound toggle button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={toggleSound}
+        className="fixed top-20 right-4 z-50 text-indigo-200 hover:text-indigo-100"
+      >
+        {isSoundOn ? (
+          <Volume2 className="w-6 h-6" />
+        ) : (
+          <VolumeX className="w-6 h-6" />
+        )}
+      </Button>
+
       {/* Background animations */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
@@ -198,9 +328,11 @@ export default function MemoryGame() {
               <SelectValue placeholder="Difficulty" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="easy">Easy</SelectItem>
-              <SelectItem value="medium">Medium</SelectItem>
-              <SelectItem value="hard">Hard</SelectItem>
+              <SelectItem value="easy">Easy (6 pairs)</SelectItem>
+              <SelectItem value="medium">Medium (8 pairs)</SelectItem>
+              <SelectItem value="hard">Hard (10 pairs)</SelectItem>
+              <SelectItem value="expert">Expert (12 pairs)</SelectItem>
+              <SelectItem value="master">Master (15 pairs)</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -209,10 +341,14 @@ export default function MemoryGame() {
       <motion.div
         className={`grid gap-2 sm:gap-4 p-2 sm:p-6 rounded-xl bg-indigo-950/50 backdrop-blur-sm ${
           difficulty === "easy"
-              ? "grid-cols-3 sm:grid-cols-4"
-              : difficulty === "medium"
-                ? "grid-cols-4"
-              : "grid-cols-4 sm:grid-cols-5"
+            ? "grid-cols-3 sm:grid-cols-4"
+            : difficulty === "medium"
+              ? "grid-cols-4"
+              : difficulty === "hard"
+                ? "grid-cols-4 sm:grid-cols-5"
+                : difficulty === "expert"
+                  ? "grid-cols-4 sm:grid-cols-6"
+                  : "grid-cols-5 sm:grid-cols-6"
         }`}
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -222,35 +358,58 @@ export default function MemoryGame() {
           <motion.div
             key={card.id}
             initial={{ rotateY: 0 }}
-              animate={{
-                rotateY: card.isMatched || flippedIndexes.includes(index) ? 180 : 0,
-              }}
+            animate={{
+              rotateY: card.isMatched || flippedIndexes.includes(index) ? 180 : 0,
+            }}
             transition={{ duration: 0.3 }}
             className="perspective-1000"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
             <Card
-              className={`relative w-[70px] h-[70px] sm:w-20 sm:h-20 md:w-24 md:h-24 cursor-pointer transform-style-3d transition-all duration-300 ${
+              className={`relative w-[70px] h-[70px] sm:w-20 sm:h-20 md:w-24 md:h-24 cursor-pointer transform-style-preserve-3d transition-transform duration-300 ${
                 card.isMatched
                   ? "bg-indigo-900/50 border-indigo-400/50"
                   : flippedIndexes.includes(index)
                     ? "bg-indigo-800/50 border-indigo-500/50"
                     : "bg-indigo-950 border-indigo-800 hover:border-indigo-600 hover:bg-indigo-900/80"
-              }`}
+              } ${card.isSpecial ? 'ring-2 ring-yellow-400/50' : ''}`}
               onClick={() => handleCardClick(index)}
+              style={{
+                transform: card.isMatched || flippedIndexes.includes(index) ? 'rotateY(180deg)' : 'rotateY(0deg)'
+              }}
             >
-              {/* Front face (hidden) */}
-              <div className="absolute inset-0 flex items-center justify-center backface-hidden">
-                <div className="w-8 h-8 rounded-full bg-indigo-800/50"></div>
+              {/* Front face (shown when not flipped) */}
+              <div 
+                className={`absolute inset-0 flex items-center justify-center backface-hidden bg-indigo-950 ${
+                  card.isSpecial ? 'bg-gradient-to-br from-indigo-950 to-purple-900' : ''
+                }`}
+                style={{
+                  transform: 'rotateY(0deg)',
+                  opacity: card.isMatched || flippedIndexes.includes(index) ? 0 : 1
+                }}
+              >
+                <div className={`w-8 h-8 rounded-full bg-indigo-800/50 ${
+                  card.isSpecial ? 'animate-pulse-slow' : ''
+                }`}></div>
               </div>
               
-              {/* Back face (icon) */}
+              {/* Back face (shown when flipped) */}
               <div
-                style={{ transform: "rotateY(180deg)" }}
-                className={`absolute inset-0 flex items-center justify-center backface-hidden ${card.color}`}
+                className={`absolute inset-0 flex items-center justify-center backface-hidden ${
+                  card.isSpecial ? 'bg-gradient-to-br from-indigo-950 to-purple-900' : 'bg-indigo-950'
+                } ${card.color}`}
+                style={{
+                  transform: 'rotateY(180deg)',
+                  opacity: card.isMatched || flippedIndexes.includes(index) ? 1 : 0
+                }}
               >
-                {React.createElement(card.icon, { className: "w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12" })}
+                {React.createElement(card.icon, { 
+                  className: `w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 ${
+                    card.isSpecial ? 'animate-pulse-slow drop-shadow-lg' : ''
+                  }`,
+                  style: { transform: 'rotateY(180deg)' }
+                })}
               </div>
             </Card>
           </motion.div>
