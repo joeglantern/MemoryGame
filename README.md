@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Memory Match Game
 
 A modern card-matching game built with Next.js, featuring smooth animations and multiple difficulty levels. Test your memory by matching pairs of cards while racing against time.
@@ -24,3 +25,7 @@ npm run dev
 ```
 
 Created by Joseph Liban M. 
+=======
+# MemoryGame
+A modern card-matching game built with Next.js, featuring smooth animations and multiple difficulty levels. Test your memory by matching pairs of cards while racing against time.
+>>>>>>> 8cd574465bf1e416da2ddb186e3ba66c9d243f85
