@@ -13,14 +13,15 @@ const NavMenu = () => {
     { href: "/game", label: "Play" },
     { href: "/how-to-play", label: "How to Play" },
     { href: "/leaderboard", label: "Leaderboard" },
+    { href: "/contact", label: "Contact" },
   ]
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-indigo-900/80 backdrop-blur-sm">
-      <ul className="flex justify-center items-center p-4 space-x-4">
+      <ul className="flex justify-center items-center p-4 space-x-4 overflow-x-auto">
         {links.map((link) => (
           <li key={link.href}>
-            <Link href={link.href} className="relative">
+            <Link href={link.href} className="relative whitespace-nowrap">
               <span
                 className={`text-indigo-200 hover:text-indigo-100 transition-colors ${
                   pathname === link.href ? "font-bold" : ""
